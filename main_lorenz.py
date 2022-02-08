@@ -34,6 +34,7 @@ else:
 
 print("Pipeline Start")
 
+
 ################
 ### Get Time ###
 ################
@@ -44,6 +45,7 @@ strNow = now.strftime("%H:%M:%S")
 strTime = strToday + "_" + strNow
 unsupervised_weight = 0.0
 logger = Logger(strTime, "Logs", "KalmanNet",unsupervised_weight)
+logger.plotFromFile("Logs\\08-02-22\KalmanNet_usw0.0_22-20-58.txt")
 logger.logEntry("Current Time = " + strTime)
 print(bcolors.UNDERLINE + bcolors.BOLD + "Current Time = " + strNow + bcolors.ENDC)
 
@@ -116,7 +118,7 @@ for rindex in range(0, len(r)):
    print("CV dataset size:", cv_target.size())
    print("Test dataset size:", test_target.size())
 
-   logger.logEntry("Traindataset size:" + str(train_target.size()))
+   logger.logEntry("Train dataset size:" + str(train_target.size()))
    logger.logEntry("CV dataset size:" + str(cv_target.size()))
    logger.logEntry("Test dataset size:" + str(test_target.size()))
 

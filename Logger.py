@@ -1,5 +1,7 @@
 import os
 from os import path as path
+import numpy as np
+import matplotlib.pyplot as plt
 
 class Logger:
 
@@ -32,7 +34,71 @@ class Logger:
         self.logFile.write(stringEntry+"\n")
         self.logFile.close()
 
+    def plotFromFile(self, file_path):
+        if path.isfile(file_path):
+            with open(file_path, 'r') as file:
+                # read the entire text file to a single string
+                data = file.read() #.replace('\n', '')
 
+                # get the Unsupervised Weight value
+                search_word = "Unsupervised Weight = "
+                start_ind = data.find(search_word) + len(search_word)
+                search_word = "\n"
+                end_ind = data.find(search_word, start_ind)
+                usw = float(data[start_ind:end_ind])
+
+                # get the total number of Epochs
+                search_word = "1/"
+                start_ind = data.find(search_word) + len(search_word)
+                search_word = " - "
+                end_ind = data.find(search_word, start_ind)
+                num_epochs = int(data[start_ind:end_ind])
+
+                mse_training_vec = np.zeros(num_epochs)
+                mse_validation_vec = np.zeros(num_epochs)
+
+                for i_epoch in range(0, num_epochs):
+                    start_epoch_line = str(i_epoch+1) + "/" + str(num_epochs)
+                    start_epoch_line_ind = data.find(start_epoch_line)
+                    # get MSE Training for current epoch
+                    search_word = "MSE Training: "
+                    start_ind = data.find(search_word, start_epoch_line_ind) + len(search_word)
+                    search_word = " [dB] "
+                    end_ind = data.find(search_word, start_ind)
+                    mse_training_vec[i_epoch] = float(data[start_ind:end_ind])
+
+                    # get MSE Validation:   for current epoch
+                    search_word = "MSE Validation: "
+                    start_ind = data.find(search_word, end_ind) + len(search_word)
+                    search_word = "[dB]"
+                    end_ind = data.find(search_word, start_ind)
+                    mse_validation_vec[i_epoch] = float(data[start_ind:end_ind])
+
+                # get optimal point and index
+
+                plt.style.use('classic')
+                fig, ax = plt.subplots()
+                ax.plot(range(1, num_epochs+1), mse_training_vec, 'b-', label='Training')
+                ax.plot(range(1, num_epochs+1), mse_validation_vec, 'g-', label='Validation')
+
+                # Plot axes labels and show the plot
+                plt.xlabel('Epoch index')
+                plt.ylabel('MSE [dB]')
+                ax.legend(loc='upper right', frameon=False)
+
+
+
+                plt.show()
+                x = 1
+
+
+
+
+
+
+        else:
+            print("Error! file does not exist:")
+            print(file_path)
 
 
 
