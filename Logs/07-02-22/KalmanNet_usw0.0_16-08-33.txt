@@ -1,0 +1,11 @@
+KalmanNet
+Current Time = 07.02.22_16:08:33
+Traindataset size:torch.Size([1000, 3, 200] 
+CV dataset size:torch.Size([100, 3, 200] 
+Test dataset size:torch.Size([200, 3, 200] 
+KNet with full model info
+Unsupervised Weight = 0.0
+1/2 - MSE Training: -5.9439 [dB] MSE Validation:  -5.9600 [dB]
+2/2 - MSE Training: -8.4935 [dB] MSE Validation:  -8.5113 [dB]
+Optimal Validation idx:2 Optimal Validation:  -8.5113 [dB]
+KalmanNet-MSE Test: -8.4519 [dB]
