@@ -35,6 +35,7 @@ class Logger:
         self.logFile.close()
 
     def plotFromFile(self, file_path):
+
         if path.isfile(file_path):
             with open(file_path, 'r') as file:
                 # read the entire text file to a single string
@@ -75,11 +76,26 @@ class Logger:
                     mse_validation_vec[i_epoch] = float(data[start_ind:end_ind])
 
                 # get optimal point and index
+                search_word = "Optimal Validation idx:"
+                start_ind = data.find(search_word) + len(search_word)
+                search_word = " Optimal Validation:"
+                end_ind = data.find(search_word, start_ind)
+                optimal_index = float(data[start_ind:end_ind])
+
+                search_word = "Optimal Validation:  "
+                start_ind = data.find(search_word) + len(search_word)
+                search_word = " [dB]"
+                end_ind = data.find(search_word, start_ind)
+                optimal_value = float(data[start_ind:end_ind])
 
                 plt.style.use('classic')
                 fig, ax = plt.subplots()
+                # plot the training vector
                 ax.plot(range(1, num_epochs+1), mse_training_vec, 'b-', label='Training')
+                # plot the validation vector
                 ax.plot(range(1, num_epochs+1), mse_validation_vec, 'g-', label='Validation')
+                # plot the minimal point
+                plt.plot([optimal_index], [optimal_value], marker='o', markersize=6, color="red")
 
                 # Plot axes labels and show the plot
                 plt.xlabel('Epoch index')
@@ -92,13 +108,11 @@ class Logger:
                 x = 1
 
 
-
-
-
-
         else:
             print("Error! file does not exist:")
             print(file_path)
 
-
+    def plotLogger(self):
+        file_path = self.folderName + self.logFileName
+        self.plotFromFile(file_path)
 

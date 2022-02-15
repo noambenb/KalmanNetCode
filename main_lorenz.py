@@ -45,7 +45,7 @@ strNow = now.strftime("%H:%M:%S")
 strTime = strToday + "_" + strNow
 unsupervised_weight = 0.0
 logger = Logger(strTime, "Logs", "KalmanNet",unsupervised_weight)
-logger.plotFromFile("Logs\\08-02-22\KalmanNet_usw0.0_22-20-58.txt")
+logger.plotFromFile("Logs\\13-02-22\KalmanNet_usw0.0_18-01-09.txt")
 logger.logEntry("Current Time = " + strTime)
 print(bcolors.UNDERLINE + bcolors.BOLD + "Current Time = " + strNow + bcolors.ENDC)
 
@@ -225,6 +225,8 @@ for rindex in range(0, len(r)):
 
    [KNet_MSE_test_linear_arr, KNet_MSE_test_linear_avg, KNet_MSE_test_dB_avg, KNet_test, KNet_test_obs] = KNet_Pipeline.NNTest(N_T, test_input, test_target, unsupervised_weight, logger)
    KNet_Pipeline.save()
+
+   logger.plotLogger()
 
    #########################################################################################################################################
    #
