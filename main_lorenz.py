@@ -44,8 +44,7 @@ strToday = today.strftime("%d.%m.%y")
 strNow = now.strftime("%H:%M:%S")
 strTime = strToday + "_" + strNow
 unsupervised_weight = 0.0
-logger = Logger(strTime, "Logs", "KalmanNet",unsupervised_weight)
-logger.plotFromFile("Logs\\13-02-22\KalmanNet_usw0.0_18-01-09.txt")
+logger = Logger(strTime, "Logs", "KalmanNet", unsupervised_weight)
 logger.logEntry("Current Time = " + strTime)
 print(bcolors.UNDERLINE + bcolors.BOLD + "Current Time = " + strNow + bcolors.ENDC)
 
@@ -170,17 +169,6 @@ for rindex in range(0, len(r)):
       print("Elapsed time " + strModel + " = ", end_time - start_time)
 
 
-   
-   # # Save results
-   # EKFfolderName = 'KNet' + '/'
-   # torch.save({#'MSE_EKF_linear_arr': MSE_EKF_linear_arr,
-   # #             'MSE_EKF_dB_avg': MSE_EKF_dB_avg,
-   #             # 'MSE_EKF_linear_arr_partial': MSE_EKF_linear_arr_partial,
-   #             # 'MSE_EKF_dB_avg_partial': MSE_EKF_dB_avg_partial,
-   #             # 'MSE_EKF_linear_arr_partialoptr': MSE_EKF_linear_arr_partialoptr,
-   #             # 'MSE_EKF_dB_avg_partialoptr': MSE_EKF_dB_avg_partialoptr,
-   #             }, EKFfolderName + EKFResultName)
-
    # KNet without model mismatch
    print(bcolors.HEADER + "KNet with full model info" + bcolors.ENDC)
    modelFolder = 'KNet' + '/'
@@ -192,7 +180,7 @@ for rindex in range(0, len(r)):
    KNet_model.Build(sys_model)
    KNet_Pipeline.setModel(KNet_model)
    # KNet_Pipeline.setTrainingParams(n_Epochs=200, n_Batch=10, learningRate=1e-3, weightDecay=1e-4) # Original Settings
-   numEpochs = 20
+   numEpochs = 100
 
    logger.logEntry("Unsupervised Weight = " + str(unsupervised_weight))
    print(bcolors.UNDERLINE + bcolors.BOLD + "Unsupervised Weight = " + str(unsupervised_weight) + bcolors.ENDC)
@@ -200,33 +188,37 @@ for rindex in range(0, len(r)):
 
    # KNet_Pipeline.model = torch.load(modelFolder+"model_KNet.pt")
 
-   # Save input parameters and data - and perform 3 runs:
-   # 1. Supervised , Semi Supervised, Purely Unsupervised.
 
+# make a loop of size of data to train.
+   # for num in range(10, train_input.size(0)+1, int(train_input.size(0) / 100)):
+   for num in range(20, 31, 1):
+      num_examples = int(num)
+      logger.set_num_examples(num_examples)
+      num_test_examples = N_T       #int(num_examples / 5)
+      num_cross_validation = N_CV   #int(num_examples / 10)
 
-   # Getting back the objects:
-   pkl_file_name = 'objs.pkl'
-   delete_flag = False
-   if os.path.isfile(pkl_file_name):
-      if delete_flag:
-         os.remove(pkl_file_name)
-         KNet_Pipeline_1st = copy.deepcopy(KNet_Pipeline)
-         # Saving the objects before a succesful run:
-         with open(pkl_file_name, 'wb') as f:  # Python 3: open(..., 'wb')
-            pickle.dump([KNet_Pipeline_1st, train_input, train_target, cv_input, cv_target, test_input, test_target], f)
+      # Getting back the objects:
+      pkl_file_name = 'objs.pkl'
+      delete_flag = False
+      if os.path.isfile(pkl_file_name):
+         if delete_flag:
+            os.remove(pkl_file_name)
+            KNet_Pipeline_1st = copy.deepcopy(KNet_Pipeline)
+            # Saving the objects before a successful run:
+            with open(pkl_file_name, 'wb') as f:  # Python 3: open(..., 'wb')
+               pickle.dump([KNet_Pipeline_1st, train_input, train_target, cv_input, cv_target, test_input, test_target], f)
+         else:
+            with open(pkl_file_name, 'rb') as f:
+               del(KNet_Pipeline)
+               KNet_Pipeline, train_input, train_target, cv_input, cv_target, test_input, test_target = pickle.load(f)
+               KNet_Pipeline.setTrainingParams(n_Epochs=numEpochs, n_Batch=10, learningRate=1e-3, weightDecay=1e-4)
+               # train_input2 = torch.index_select(train_input, 0, torch.tensor(range(num_examples)))
 
-      else:
-         with open(pkl_file_name, 'rb') as f:
-            KNet_Pipeline_2nd, train_input, train_target, cv_input, cv_target, test_input, test_target = pickle.load(f)
-            KNet_Pipeline = KNet_Pipeline_2nd
-            KNet_Pipeline.setTrainingParams(n_Epochs=numEpochs, n_Batch=10, learningRate=1e-3, weightDecay=1e-4)
+      KNet_Pipeline.NNTrain(num_examples, train_input, train_target, num_cross_validation, cv_input, cv_target, unsupervised_weight, logger)
 
-   KNet_Pipeline.NNTrain(N_E, train_input, train_target, N_CV, cv_input, cv_target,unsupervised_weight, logger)
-
-   [KNet_MSE_test_linear_arr, KNet_MSE_test_linear_avg, KNet_MSE_test_dB_avg, KNet_test, KNet_test_obs] = KNet_Pipeline.NNTest(N_T, test_input, test_target, unsupervised_weight, logger)
-   KNet_Pipeline.save()
-
-   logger.plotLogger()
+      [KNet_MSE_test_linear_arr, KNet_MSE_test_linear_avg, KNet_MSE_test_dB_avg, KNet_test, KNet_test_obs] = KNet_Pipeline.NNTest(num_test_examples, test_input, test_target, unsupervised_weight, logger)
+      KNet_Pipeline.save()
+      logger.plotLogger()
 
    #########################################################################################################################################
    #

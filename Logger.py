@@ -9,12 +9,19 @@ class Logger:
         self.strTime = strTime.replace('.', '-')
         self.strTime = self.strTime.replace(':', '-')
 
+
+
         self.folderName = folderName + '/'
         self.modelName = modelName
 
         # create directory Logs if does not exist
         if not path.exists(self.folderName):
             os.mkdir(self.folderName)
+
+        self.logFileName2 = self.folderName + "num_examples_log" + self.strTime + ".txt"
+        self.logFile2 = open(self.logFileName2, "w")
+        self.logFile2.write("Current Time = " + strTime + "\n")
+        self.logFile2.close()
 
         self.folderName = self.folderName + self.strTime[0:8] + '/'
         if not path.exists(self.folderName):
@@ -26,6 +33,8 @@ class Logger:
         self.logFile.write(modelName + "\n")
         self.logFile.close()
 
+    def set_num_examples(self,num_examples):
+        self.num_examples = num_examples
 
     def logEntry(self, stringEntry):
         self.logFile = open(self.folderName + self.logFileName, "a")
@@ -33,6 +42,14 @@ class Logger:
         stringEntry = stringEntry.replace(')', ' ')
         self.logFile.write(stringEntry+"\n")
         self.logFile.close()
+
+    def logEntry2(self, stringEntry):
+        self.logFile2 = open(self.logFileName2, "a")
+        stringEntry = stringEntry.replace('tensor(', ' ')
+        stringEntry = stringEntry.replace(')', ' ')
+        self.logFile2.write(stringEntry+"\n")
+        self.logFile2.close()
+
 
     def plotFromFile(self, file_path):
 
@@ -48,9 +65,13 @@ class Logger:
                 end_ind = data.find(search_word, start_ind)
                 usw = float(data[start_ind:end_ind])
 
+                # go to the correct number of examples
+                search_word = "Num Examples in Training: " + str(self.num_examples)
+                jump_index = data.find(search_word) + len(search_word)
+
                 # get the total number of Epochs
                 search_word = "1/"
-                start_ind = data.find(search_word) + len(search_word)
+                start_ind = data.find(search_word, jump_index) + len(search_word)
                 search_word = " - "
                 end_ind = data.find(search_word, start_ind)
                 num_epochs = int(data[start_ind:end_ind])
@@ -60,7 +81,7 @@ class Logger:
 
                 for i_epoch in range(0, num_epochs):
                     start_epoch_line = str(i_epoch+1) + "/" + str(num_epochs)
-                    start_epoch_line_ind = data.find(start_epoch_line)
+                    start_epoch_line_ind = data.find(start_epoch_line, jump_index)
                     # get MSE Training for current epoch
                     search_word = "MSE Training: "
                     start_ind = data.find(search_word, start_epoch_line_ind) + len(search_word)
@@ -77,13 +98,13 @@ class Logger:
 
                 # get optimal point and index
                 search_word = "Optimal Validation idx:"
-                start_ind = data.find(search_word) + len(search_word)
+                start_ind = data.find(search_word, jump_index) + len(search_word)
                 search_word = " Optimal Validation:"
                 end_ind = data.find(search_word, start_ind)
                 optimal_index = float(data[start_ind:end_ind])
 
                 search_word = "Optimal Validation:  "
-                start_ind = data.find(search_word) + len(search_word)
+                start_ind = data.find(search_word, jump_index) + len(search_word)
                 search_word = " [dB]"
                 end_ind = data.find(search_word, start_ind)
                 optimal_value = float(data[start_ind:end_ind])
@@ -101,11 +122,12 @@ class Logger:
                 plt.xlabel('Epoch index')
                 plt.ylabel('MSE [dB]')
                 ax.legend(loc='upper right', frameon=False)
+                plt.figtext(0.2, 0.2, "Num Examples = " + str(self.num_examples))
 
+                # plt.show()
+                plt.savefig(self.folderName + self.logFileName[:-4] + "_numExa_" + str(self.num_examples) + ".png")
+                plt.close('all')
 
-
-                plt.show()
-                x = 1
 
 
         else:

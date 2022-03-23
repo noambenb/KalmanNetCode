@@ -57,6 +57,12 @@ class Pipeline_EKF:
     # cv_input - [y_t]_1_^T
     #
     def NNTrain(self, n_Examples, train_input, train_target, n_CV, cv_input, cv_target, unsupervised_weight, logger):
+        str1 = "Num Examples in Training: " + str(n_Examples)
+        print(str1)
+        logger.logEntry(str1)
+        str1 = "Num Examples in Cross Validation: " + str(n_CV)
+        print(str1)
+        logger.logEntry(str1)
 
         self.N_E = n_Examples
         self.N_CV = n_CV
@@ -215,6 +221,7 @@ class Pipeline_EKF:
             print(bcolors.BOLD + "Optimal Validation idx:", self.MSE_cv_idx_opt + 1, "Optimal Validation:", self.MSE_cv_dB_opt, "[dB]" + bcolors.ENDC)
 
         logger.logEntry("Optimal Validation idx:" + str(self.MSE_cv_idx_opt + 1) + " Optimal Validation: " + str(self.MSE_cv_dB_opt) + "[dB]")
+        logger.logEntry2("Num Examples Training:" + str(self.N_E) + " Optimal Validation: " + str(self.MSE_cv_dB_opt) + "[dB]")
 
         # Plot results
 
@@ -269,6 +276,8 @@ class Pipeline_EKF:
         str1 = self.modelName + "-" + "MSE Test:"
         print(str1, self.MSE_test_dB_avg, "[dB]")
         logger.logEntry(str1 + str(self.MSE_test_dB_avg) + "[dB]")
+        logger.logEntry2(str1 + str(self.MSE_test_dB_avg) + "[dB]")
+
 
         return [self.MSE_test_linear_arr, self.MSE_test_linear_avg, self.MSE_test_dB_avg, x_out_array, y_out_array]
 
