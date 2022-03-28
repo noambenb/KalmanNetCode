@@ -33,8 +33,8 @@ class Logger:
         self.logFile.write(modelName + "\n")
         self.logFile.close()
 
-    def set_num_examples(self,num_examples):
-        self.num_examples = num_examples
+    def set_num_labeled_examples(self, num_labeled_examples):
+        self.num_labeled_examples = num_labeled_examples
 
     def logEntry(self, stringEntry):
         self.logFile = open(self.folderName + self.logFileName, "a")
@@ -66,7 +66,7 @@ class Logger:
                 usw = float(data[start_ind:end_ind])
 
                 # go to the correct number of examples
-                search_word = "Num Examples in Training: " + str(self.num_examples)
+                search_word = "Num Labeled Examples in Training: " + str(self.num_labeled_examples)
                 jump_index = data.find(search_word) + len(search_word)
 
                 # get the total number of Epochs
@@ -122,10 +122,10 @@ class Logger:
                 plt.xlabel('Epoch index')
                 plt.ylabel('MSE [dB]')
                 ax.legend(loc='upper right', frameon=False)
-                plt.figtext(0.2, 0.2, "Num Examples = " + str(self.num_examples))
+                plt.figtext(0.2, 0.2, "Num Labeled Examples = " + str(self.num_labeled_examples))
 
                 # plt.show()
-                plt.savefig(self.folderName + self.logFileName[:-4] + "_numExa_" + str(self.num_examples) + ".png")
+                plt.savefig(self.folderName + self.logFileName[:-4] + "_numLblExa_" + str(self.num_labeled_examples) + ".png")
                 plt.close('all')
 
 

@@ -56,8 +56,8 @@ class Pipeline_EKF:
 
     # cv_input - [y_t]_1_^T
     #
-    def NNTrain(self, n_Examples, train_input, train_target, n_CV, cv_input, cv_target, unsupervised_weight, logger):
-        str1 = "Num Examples in Training: " + str(n_Examples)
+    def NNTrain(self, n_Examples, n_Labeled_Examples, train_input, train_target, n_CV, cv_input, cv_target, unsupervised_weight, logger):
+        str1 = "Num Labeled Examples in Training: " + str(n_Labeled_Examples)
         print(str1)
         logger.logEntry(str1)
         str1 = "Num Examples in Cross Validation: " + str(n_CV)
@@ -72,11 +72,11 @@ class Pipeline_EKF:
         MSE_cv_linear_batch_obs = torch.empty([self.N_CV])
 
         self.MSE_cv_linear_epoch = torch.empty([self.N_Epochs])
-        self.MSE_cv_linear_epoch_obs = torch.empty([self.N_Epochs])
+        # self.MSE_cv_linear_epoch_obs = torch.empty([self.N_Epochs])
 
         self.MSE_cv_dB_epoch = torch.empty([self.N_Epochs])
-        self.MSE_cv_dB_epoch_obs = torch.empty([self.N_Epochs])
-        self.MSE_cv_dB_epoch_hybrid_loss = torch.empty([self.N_Epochs])
+        # self.MSE_cv_dB_epoch_obs = torch.empty([self.N_Epochs])
+        # self.MSE_cv_dB_epoch_hybrid_loss = torch.empty([self.N_Epochs])
 
         MSE_train_linear_batch = torch.empty([self.N_B])
         MSE_train_linear_batch_obs = torch.empty([self.N_B])
@@ -97,7 +97,7 @@ class Pipeline_EKF:
             ### Validation Sequence Batch ###
             #################################
 
-            start_time = datetime.now();
+            start_time = datetime.now()
 
             # Cross Validation Mode
             self.model.eval()
@@ -115,21 +115,21 @@ class Pipeline_EKF:
 
                 # Compute Training Loss
                 MSE_cv_linear_batch[j] = self.loss_fn(x_out_cv, cv_target[j, :, :]).item()
-                MSE_cv_linear_batch_obs[j] = self.loss_fn(y_out_cv, y_cv[:, :]).item()
+                # MSE_cv_linear_batch_obs[j] = self.loss_fn(y_out_cv, y_cv[:, :]).item()
 
             # Average
             self.MSE_cv_linear_epoch[ti] = torch.mean(MSE_cv_linear_batch)
             self.MSE_cv_dB_epoch[ti] = 10 * torch.log10(self.MSE_cv_linear_epoch[ti])
 
-            self.MSE_cv_linear_epoch_obs[ti] = torch.mean(MSE_cv_linear_batch_obs)
-            self.MSE_cv_dB_epoch_obs[ti] = 10 * torch.log10(self.MSE_cv_linear_epoch_obs[ti])
+            # self.MSE_cv_linear_epoch_obs[ti] = torch.mean(MSE_cv_linear_batch_obs)
+            # self.MSE_cv_dB_epoch_obs[ti] = 10 * torch.log10(self.MSE_cv_linear_epoch_obs[ti])
 
             # Hybrid Loss
-            self.MSE_cv_dB_epoch_hybrid_loss[ti] = self.MSE_cv_dB_epoch[ti] * (1 - unsupervised_weight) + \
-                          self.MSE_cv_dB_epoch_obs[ti] * unsupervised_weight
+            # self.MSE_cv_dB_epoch_hybrid_loss[ti] = self.MSE_cv_dB_epoch[ti] * (1 - unsupervised_weight) + \
+            #               self.MSE_cv_dB_epoch_obs[ti] * unsupervised_weight
 
-            if (self.MSE_cv_dB_epoch_hybrid_loss[ti] < self.MSE_cv_dB_opt):
-                self.MSE_cv_dB_opt = self.MSE_cv_dB_epoch_hybrid_loss[ti]
+            if (self.MSE_cv_dB_epoch[ti] < self.MSE_cv_dB_opt):
+                self.MSE_cv_dB_opt = self.MSE_cv_dB_epoch[ti]
                 self.MSE_cv_idx_opt = ti
                 torch.save(self.model, self.modelFileName)
 
@@ -145,10 +145,24 @@ class Pipeline_EKF:
 
             Batch_Optimizing_LOSS_sum = 0
 
-            for j in range(0, self.N_B):
-                n_e = random.randint(0, self.N_E - 1)
+            #TODO:
+            # there is a bug which causes the program to collapse. recreate and fix.
+            # also, try to change the input so it will not be only the first/last trajectories, randomize from range.
+            supervised_input = train_input[:n_Labeled_Examples, :, :]
+            unsupervised_input = train_input[n_Labeled_Examples:, :, :]
+            supervised_prob = n_Labeled_Examples / n_Examples   # should be according to the size of the labeled examples from all examples?
 
-                y_training = train_input[n_e, :, :]
+            for j in range(0, self.N_B):
+                import random
+                supervised_iteration = random.random() < supervised_prob
+                if supervised_iteration:
+                    n_e = random.randint(0, supervised_input.shape[0]-1)
+                    y_training = supervised_input[n_e, :, :]
+                else:
+                    n_e = random.randint(0, unsupervised_input.shape[0]-1)
+                    y_training = unsupervised_input[n_e, :, :]
+                # n_e = random.randint(0, self.N_E - 1)
+                # y_training = train_input[n_e, :, :]
                 self.model.InitSequence(self.ssModel.m1x_0, self.ssModel.T)
 
                 x_out_training = torch.empty(self.ssModel.m, self.ssModel.T)
@@ -158,14 +172,19 @@ class Pipeline_EKF:
                     x_out_training[:, t] = self.model(y_training[:, t])
                     y_out_training[:, t] = self.model.m1y.squeeze().T
 
-                    # Compute Training Loss
-                LOSS = self.loss_fn(x_out_training, train_target[n_e, :, :])
-                LOSS_obs = self.loss_fn(y_out_training, y_training[:, :])
-                Loss_hybrid = LOSS * (1 - unsupervised_weight) + LOSS_obs * unsupervised_weight
+                # Compute Training Loss
+                if supervised_iteration:
+                    LOSS = self.loss_fn(x_out_training, train_target[n_e, :, :])
+                else:
+                    LOSS = self.loss_fn(y_out_training, train_target[n_e, :, :] )
 
-                MSE_train_linear_batch[j] = Loss_hybrid.item()
+                # LOSS = self.loss_fn(x_out_training, train_target[n_e, :, :])
+                # LOSS_obs = self.loss_fn(y_out_training, y_training[:, :])
+                # Loss_hybrid = LOSS * (1 - unsupervised_weight) + LOSS_obs * unsupervised_weight
 
-                Batch_Optimizing_LOSS_sum = Batch_Optimizing_LOSS_sum + Loss_hybrid
+                MSE_train_linear_batch[j] = LOSS.item()
+
+                Batch_Optimizing_LOSS_sum = Batch_Optimizing_LOSS_sum + LOSS
 
             # Average
             self.MSE_train_linear_epoch[ti] = torch.mean(MSE_train_linear_batch)
@@ -223,8 +242,6 @@ class Pipeline_EKF:
         logger.logEntry("Optimal Validation idx:" + str(self.MSE_cv_idx_opt + 1) + " Optimal Validation: " + str(self.MSE_cv_dB_opt) + "[dB]")
         logger.logEntry2("Num Examples Training:" + str(self.N_E) + " Optimal Validation: " + str(self.MSE_cv_dB_opt) + "[dB]")
 
-        # Plot results
-
 
 
     def NNTest(self, n_Test, test_input, test_target, unsupervised_weight, logger):
@@ -259,11 +276,11 @@ class Pipeline_EKF:
                 y_out_test[:, t] = self.model.m1y.T
 
             loss_supervised = loss_fn(x_out_test, test_target[j, :, :])
-            loss_unsupervised = loss_fn(y_out_test, test_input[j, :, :])
-            loss_hybrid = loss_supervised * (1 - unsupervised_weight) + \
-                          loss_unsupervised * unsupervised_weight
+            # loss_unsupervised = loss_fn(y_out_test, test_input[j, :, :])
+            # loss_hybrid = loss_supervised * (1 - unsupervised_weight) + \
+            #               loss_unsupervised * unsupervised_weight
 
-            self.MSE_test_linear_arr[j] = loss_hybrid.item()
+            self.MSE_test_linear_arr[j] = loss_supervised.item()
 
             x_out_array[j, :, :] = x_out_test
             y_out_array[j, :, :] = y_out_test

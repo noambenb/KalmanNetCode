@@ -1,0 +1,9 @@
+KalmanNet
+Current Time = 28.03.22_20:01:38
+Train dataset size:torch.Size([1000, 3, 200] 
+CV dataset size:torch.Size([100, 3, 200] 
+Test dataset size:torch.Size([200, 3, 200] 
+KNet with full model info
+Unsupervised Weight = 0.0
+Num Labeled Examples in Training: 25
+Num Examples in Cross Validation: 100
