@@ -36,6 +36,9 @@ class Logger:
     def set_num_labeled_examples(self, num_labeled_examples):
         self.num_labeled_examples = num_labeled_examples
 
+    def set_num_supervised_itterations(self, num_supervised_iterations):
+        self.num_supervised_iterations = num_supervised_iterations
+
     def logEntry(self, stringEntry):
         self.logFile = open(self.folderName + self.logFileName, "a")
         stringEntry = stringEntry.replace('tensor(', ' ')
@@ -123,6 +126,7 @@ class Logger:
                 plt.ylabel('MSE [dB]')
                 ax.legend(loc='upper right', frameon=False)
                 plt.figtext(0.2, 0.2, "Num Labeled Examples = " + str(self.num_labeled_examples))
+                plt.figtext(0.2, 0.1, "Num Supervised Iterations = " + str(self.num_supervised_iterations))
 
                 # plt.show()
                 plt.savefig(self.folderName + self.logFileName[:-4] + "_numLblExa_" + str(self.num_labeled_examples) + ".png")

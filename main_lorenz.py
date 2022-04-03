@@ -180,7 +180,7 @@ for rindex in range(0, len(r)):
    KNet_model.Build(sys_model)
    KNet_Pipeline.setModel(KNet_model)
    # KNet_Pipeline.setTrainingParams(n_Epochs=200, n_Batch=10, learningRate=1e-3, weightDecay=1e-4) # Original Settings
-   numEpochs = 1000
+   numEpochs = 200
    numBatches = 1
 
    logger.logEntry("Unsupervised Weight = " + str(unsupervised_weight))
@@ -192,7 +192,7 @@ for rindex in range(0, len(r)):
 
 # make a loop of size of data to train.
    # for num in range(10, train_input.size(0)+1, int(train_input.size(0) / 100)):
-   for num in range(1, 100, 10):
+   for num in range(16, 21, 1):
       num_labeled_examples = int(num)
       logger.set_num_labeled_examples(num_labeled_examples)
       num_test_examples = N_T       #int(num_examples / 5)

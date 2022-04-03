@@ -91,6 +91,8 @@ class Pipeline_EKF:
         self.MSE_cv_dB_opt = 1000
         self.MSE_cv_idx_opt = 0
 
+        num_supervised_iterations = 0
+
         for ti in range(0, self.N_Epochs):
 
             #################################
@@ -156,6 +158,7 @@ class Pipeline_EKF:
                 import random
                 supervised_iteration = random.random() < supervised_prob
                 if supervised_iteration:
+                    num_supervised_iterations = num_supervised_iterations + 1
                     n_e = random.randint(0, supervised_input.shape[0]-1)
                     y_training = supervised_input[n_e, :, :]
                 else:
@@ -240,8 +243,10 @@ class Pipeline_EKF:
             print(bcolors.BOLD + "Optimal Validation idx:", self.MSE_cv_idx_opt + 1, "Optimal Validation:", self.MSE_cv_dB_opt, "[dB]" + bcolors.ENDC)
 
         logger.logEntry("Optimal Validation idx:" + str(self.MSE_cv_idx_opt + 1) + " Optimal Validation: " + str(self.MSE_cv_dB_opt) + "[dB]")
-        logger.logEntry2("Num Examples Training:" + str(self.N_E) + " Optimal Validation: " + str(self.MSE_cv_dB_opt) + "[dB]")
+        logger.logEntry("Number of supervised itterations:" + str(num_supervised_iterations) + "/" + str(self.N_E) + "[dB]")
 
+        logger.logEntry2("Num Examples Training:" + str(self.N_E) + " Optimal Validation: " + str(self.MSE_cv_dB_opt) + "[dB]")
+        logger.set_num_supervised_itterations(num_supervised_iterations)
 
 
     def NNTest(self, n_Test, test_input, test_target, unsupervised_weight, logger):
