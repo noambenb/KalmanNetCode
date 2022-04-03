@@ -155,7 +155,6 @@ class Pipeline_EKF:
             supervised_prob = n_Labeled_Examples / n_Examples   # should be according to the size of the labeled examples from all examples?
 
             for j in range(0, self.N_B):
-                import random
                 supervised_iteration = random.random() < supervised_prob
                 if supervised_iteration:
                     num_supervised_iterations = num_supervised_iterations + 1
