@@ -216,15 +216,16 @@ class Pipeline_EKF:
             ### Training Summary ###
             ########################
             logger.logEntry(str(ti + 1) + "/" + str(self.N_Epochs) + " - MSE Training:" + str(self.MSE_train_dB_epoch[ti]) + "[dB] " + "MSE Validation: " + str(self.MSE_cv_dB_epoch[ti]) + "[dB]")
-            print(bcolors.UNDERLINE + str(ti + 1), "- MSE Training:" + bcolors.ENDC, self.MSE_train_dB_epoch[ti], "[dB]",
+            print(bcolors.BOLD + bcolors.UNDERLINE + str(ti + 1), "- MSE Training:" + bcolors.ENDC, self.MSE_train_dB_epoch[ti], "[dB]",
                         "MSE Validation :", self.MSE_cv_dB_epoch[ti], "[dB]")
 
             end_time = datetime.now()
             elapsed_time = end_time - start_time
             print("Elapsed time for Epoch ", ti + 1, "/", self.N_Epochs, " is: ", elapsed_time)
-
+            print("Number of Supervised Iterations is: " + str(num_supervised_iterations) + " out of: " + str(ti + 1))
             if torch.isnan(self.MSE_train_dB_epoch[ti]) or torch.isnan(self.MSE_cv_dB_epoch[ti]):
                 print(bcolors.FAIL + "NaN results! exiting..." + bcolors.ENDC)
+                logger.logEntry("NaN results! exiting...")
                 # os.system('ruAgain.bat')
                 print(quit)
                 quit()
@@ -239,10 +240,10 @@ class Pipeline_EKF:
                     print(bcolors.WARNING + "diff MSE Training :", d_train, "[dB]",
                           "diff MSE Validation :", d_cv, "[dB]" + bcolors.ENDC)
 
-            print(bcolors.BOLD + "Optimal Validation idx:", self.MSE_cv_idx_opt + 1, "Optimal Validation:", self.MSE_cv_dB_opt, "[dB]" + bcolors.ENDC)
+            print(bcolors.UNDERLINE + "Optimal Validation idx:", self.MSE_cv_idx_opt + 1, "Optimal Validation:", self.MSE_cv_dB_opt, "[dB]" + bcolors.ENDC)
 
         logger.logEntry("Optimal Validation idx:" + str(self.MSE_cv_idx_opt + 1) + " Optimal Validation: " + str(self.MSE_cv_dB_opt) + "[dB]")
-        logger.logEntry("Number of supervised itterations:" + str(num_supervised_iterations) + "/" + str(self.N_E) + "[dB]")
+        logger.logEntry("Number of supervised iterations:" + str(num_supervised_iterations) + "/" + str(self.N_E) + "[dB]")
 
         logger.logEntry2("Num Examples Training:" + str(self.N_E) + " Optimal Validation: " + str(self.MSE_cv_dB_opt) + "[dB]")
         logger.set_num_supervised_itterations(num_supervised_iterations)

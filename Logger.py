@@ -126,7 +126,7 @@ class Logger:
                 plt.ylabel('MSE [dB]')
                 ax.legend(loc='upper right', frameon=False)
                 plt.figtext(0.2, 0.2, "Num Labeled Examples = " + str(self.num_labeled_examples))
-                plt.figtext(0.2, 0.1, "Num Supervised Iterations = " + str(self.num_supervised_iterations))
+                plt.figtext(0.2, 0.15, "Num Supervised Iterations = " + str(self.num_supervised_iterations))
 
                 # plt.show()
                 plt.savefig(self.folderName + self.logFileName[:-4] + "_numLblExa_" + str(self.num_labeled_examples) + ".png")

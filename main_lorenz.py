@@ -192,7 +192,7 @@ for rindex in range(0, len(r)):
 
 # make a loop of size of data to train.
    # for num in range(10, train_input.size(0)+1, int(train_input.size(0) / 100)):
-   for num in range(16, 21, 1):
+   for num in range(20, 21, 1):
       num_labeled_examples = int(num)
       logger.set_num_labeled_examples(num_labeled_examples)
       num_test_examples = N_T       #int(num_examples / 5)
@@ -215,7 +215,7 @@ for rindex in range(0, len(r)):
                KNet_Pipeline.setTrainingParams(n_Epochs=numEpochs, n_Batch=numBatches, learningRate=1e-3, weightDecay=1e-4)
                # train_input2 = torch.index_select(train_input, 0, torch.tensor(range(num_examples)))
 
-      KNet_Pipeline.NNTrain(num_labeled_examples, num_labeled_examples, train_input, train_target, num_cross_validation, cv_input, cv_target, unsupervised_weight, logger)
+      KNet_Pipeline.NNTrain(N_E, num_labeled_examples, train_input, train_target, num_cross_validation, cv_input, cv_target, unsupervised_weight, logger)
 
       [KNet_MSE_test_linear_arr, KNet_MSE_test_linear_avg, KNet_MSE_test_dB_avg, KNet_test, KNet_test_obs] = KNet_Pipeline.NNTest(num_test_examples, test_input, test_target, unsupervised_weight, logger)
       KNet_Pipeline.save()

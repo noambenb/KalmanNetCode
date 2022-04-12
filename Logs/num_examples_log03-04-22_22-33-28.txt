@@ -1,1 +1,11 @@
 Current Time = 03.04.22_22:33:28
+Num Examples Training:16 Optimal Validation:  -9.5360 [dB]
+KalmanNet-MSE Test: -9.4895 [dB]
+Num Examples Training:17 Optimal Validation:  -9.6270 [dB]
+KalmanNet-MSE Test: -9.6219 [dB]
+Num Examples Training:18 Optimal Validation:  -9.5038 [dB]
+KalmanNet-MSE Test: -9.4284 [dB]
+Num Examples Training:19 Optimal Validation:  -9.5240 [dB]
+KalmanNet-MSE Test: -9.3923 [dB]
+Num Examples Training:20 Optimal Validation:  -9.6337 [dB]
+KalmanNet-MSE Test: -9.6004 [dB]
