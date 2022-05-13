@@ -55,8 +55,14 @@ class Pipeline_EKF:
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr=self.learningRate, weight_decay=self.weightDecay)
 
     # cv_input - [y_t]_1_^T
-    #
     def NNTrain(self, n_Examples, n_Labeled_Examples, train_input, train_target, n_CV, cv_input, cv_target, unsupervised_weight, logger):
+        """
+        train_input     - are the samples of the target, denoted by: y_t.
+        train_target    - are the state vector of the target, denoted by: x_t.
+        cv_input        - are the same as train_input, but used for the validation phase.
+        cv_target       - are the same as train_target, but used for the validation phase.
+        """
+
         str1 = "Num Labeled Examples in Training: " + str(n_Labeled_Examples)
         print(str1)
         logger.logEntry(str1)
@@ -147,9 +153,7 @@ class Pipeline_EKF:
 
             Batch_Optimizing_LOSS_sum = 0
 
-            #TODO:
-            # there is a bug which causes the program to collapse. recreate and fix.
-            # also, try to change the input so it will not be only the first/last trajectories, randomize from range.
+
             supervised_input = train_input[:n_Labeled_Examples, :, :]
             unsupervised_input = train_input[n_Labeled_Examples:, :, :]
             supervised_prob = n_Labeled_Examples / n_Examples   # should be according to the size of the labeled examples from all examples?
@@ -176,9 +180,9 @@ class Pipeline_EKF:
 
                 # Compute Training Loss
                 if supervised_iteration:
-                    LOSS = self.loss_fn(x_out_training, train_target[n_e, :, :])
+                    LOSS = self.loss_fn(x_out_training, train_input[n_e, :, :])
                 else:
-                    LOSS = self.loss_fn(y_out_training, train_target[n_e, :, :] )
+                    LOSS = self.loss_fn(y_out_training, train_target[n_e, :, :])
 
                 # LOSS = self.loss_fn(x_out_training, train_target[n_e, :, :])
                 # LOSS_obs = self.loss_fn(y_out_training, y_training[:, :])
@@ -226,6 +230,7 @@ class Pipeline_EKF:
             if torch.isnan(self.MSE_train_dB_epoch[ti]) or torch.isnan(self.MSE_cv_dB_epoch[ti]):
                 print(bcolors.FAIL + "NaN results! exiting..." + bcolors.ENDC)
                 logger.logEntry("NaN results! exiting...")
+                logger.plotLogger()
                 # os.system('ruAgain.bat')
                 print(quit)
                 quit()

@@ -180,19 +180,19 @@ for rindex in range(0, len(r)):
    KNet_model.Build(sys_model)
    KNet_Pipeline.setModel(KNet_model)
    # KNet_Pipeline.setTrainingParams(n_Epochs=200, n_Batch=10, learningRate=1e-3, weightDecay=1e-4) # Original Settings
-   numEpochs = 200
-   numBatches = 1
+   numEpochs = 1000 # actually, this parameter is not the number of Epochs, but rather the number of examples in training.
+   numBatches = 10
 
    logger.logEntry("Unsupervised Weight = " + str(unsupervised_weight))
    print(bcolors.UNDERLINE + bcolors.BOLD + "Unsupervised Weight = " + str(unsupervised_weight) + bcolors.ENDC)
-   KNet_Pipeline.setTrainingParams(n_Epochs=numEpochs, n_Batch=numBatches, learningRate=1e-3, weightDecay=1e-4)
+   KNet_Pipeline.setTrainingParams(n_Epochs=numEpochs, n_Batch=numBatches, learningRate=5e-4, weightDecay=1e-4)
 
    # KNet_Pipeline.model = torch.load(modelFolder+"model_KNet.pt")
 
 
 # make a loop of size of data to train.
    # for num in range(10, train_input.size(0)+1, int(train_input.size(0) / 100)):
-   for num in range(20, 21, 1):
+   for num in range(100, 1001, 100):
       num_labeled_examples = int(num)
       logger.set_num_labeled_examples(num_labeled_examples)
       num_test_examples = N_T       #int(num_examples / 5)
@@ -212,7 +212,7 @@ for rindex in range(0, len(r)):
             with open(pkl_file_name, 'rb') as f:
                del(KNet_Pipeline)
                KNet_Pipeline, train_input, train_target, cv_input, cv_target, test_input, test_target = pickle.load(f)
-               KNet_Pipeline.setTrainingParams(n_Epochs=numEpochs, n_Batch=numBatches, learningRate=1e-3, weightDecay=1e-4)
+               KNet_Pipeline.setTrainingParams(n_Epochs=numEpochs, n_Batch=numBatches, learningRate=5e-4, weightDecay=1e-4)
                # train_input2 = torch.index_select(train_input, 0, torch.tensor(range(num_examples)))
 
       KNet_Pipeline.NNTrain(N_E, num_labeled_examples, train_input, train_target, num_cross_validation, cv_input, cv_target, unsupervised_weight, logger)
